@@ -179,3 +179,37 @@ export async function updateSeatPin(id, pinX, pinY) {
   const { error } = await supabase.from('spaces_seats').update({ pin_x: pinX, pin_y: pinY }).eq('id', id)
   if (error) throw error
 }
+
+// ── Zones ────────────────────────────────────────────────────────────────
+export async function fetchZones(officeId) {
+  const { data, error } = await supabase.from('spaces_zones').select('*').eq('office_id', officeId)
+  if (error) throw error
+  return data
+}
+export async function createZone(zone) {
+  const { data, error } = await supabase.from('spaces_zones').insert(zone).select().single()
+  if (error) throw error
+  return data
+}
+export async function updateZone(id, updates) {
+  const { error } = await supabase.from('spaces_zones').update(updates).eq('id', id)
+  if (error) throw error
+}
+export async function deleteZone(id) {
+  const { error } = await supabase.from('spaces_zones').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ── Desks (canvas-based cx/cy) ────────────────────────────────────────────
+export async function createDesk(officeId, cx, cy, seatNumber, zoneId) {
+  const { data, error } = await supabase
+    .from('spaces_seats')
+    .insert({ office_id: officeId, cx, cy, seat_number: seatNumber, zone_id: zoneId || null, occupied: false })
+    .select().single()
+  if (error) throw error
+  return data
+}
+export async function updateDeskPos(id, cx, cy) {
+  const { error } = await supabase.from('spaces_seats').update({ cx, cy }).eq('id', id)
+  if (error) throw error
+}
