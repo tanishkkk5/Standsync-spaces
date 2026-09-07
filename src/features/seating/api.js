@@ -141,3 +141,13 @@ export async function updateOfficeGrid(officeId, gridCols, gridRows) {
     .eq('id', officeId)
   if (error) throw error
 }
+
+export async function updateLayoutBlock(id, updates) {
+  const { error } = await supabase.from('spaces_layout_blocks').update(updates).eq('id', id)
+  if (error) throw error
+}
+
+export async function moveSeat(id, x, y) {
+  const { error } = await supabase.from('spaces_seats').update({ x, y }).eq('id', id)
+  if (error) throw error
+}
