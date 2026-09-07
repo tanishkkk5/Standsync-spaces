@@ -75,7 +75,7 @@ create policy "Users can read their own role"
 -- ── Seed: Bangalore Office 1 & 2 (4 pods x 3 seats + 8 bay rows x 7 seats = 68 seats each) ──
 do $$
 declare
-  office_id uuid;
+  v_office_id uuid;
   office_names text[] := array['Bangalore — Office 1', 'Bangalore — Office 2'];
   prefixes text[] := array['B1', 'B2'];
   i int;
@@ -88,10 +88,10 @@ begin
     insert into spaces_offices (name, location, sort_order)
     values (office_names[i], 'Bangalore', i)
     on conflict (name) do nothing
-    returning id into office_id;
+    returning id into v_office_id;
 
-    if office_id is null then
-      select id into office_id from spaces_offices where name = office_names[i];
+    if v_office_id is null then
+      select id into v_office_id from spaces_offices where name = office_names[i];
     end if;
 
     seat_num := 0;
@@ -101,7 +101,7 @@ begin
       for c in 0..2 loop
         seat_num := seat_num + 1;
         insert into spaces_seats (office_id, seat_number, section, pod_index, col_index)
-        values (office_id, prefixes[i] || '-' || lpad(seat_num::text, 2, '0'), 'pod', p, c)
+        values (v_office_id, prefixes[i] || '-' || lpad(seat_num::text, 2, '0'), 'pod', p, c)
         on conflict (office_id, seat_number) do nothing;
       end loop;
     end loop;
@@ -112,7 +112,7 @@ begin
         seat_num := seat_num + 1;
         insert into spaces_seats (office_id, seat_number, section, row_index, col_index, facing)
         values (
-          office_id,
+          v_office_id,
           prefixes[i] || '-' || lpad(seat_num::text, 2, '0'),
           'bay',
           r,
