@@ -1,0 +1,258 @@
+/* ─── StandSync Elevate — Design Tokens ─────────────────────────────────────
+   Light version of StandSync main app
+   Sidebar: always dark #1A1A1A
+   Content: off-white #F8F9FA with blueprint grid
+   Fonts: Outfit (headings) · Inter (body) · JetBrains Mono (mono)
+   ─────────────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ── App shell ──────────────────────────────────────────────────────────── */
+  --bg:              #F8F9FA;
+  --surface:         #FFFFFF;
+  --surface-2:       #F3F4F6;
+  --text-primary:    #0A0A0B;
+  --text-secondary:  #3F4147;
+  --text-tertiary:   #8A8D94;
+  --border:          rgba(15,18,28,.10);
+  --border-focus:    rgba(0,112,243,.45);
+
+  /* ── Brand / Accent ─────────────────────────────────────────────────────── */
+  --accent:          #0070F3;
+  --accent-2:        #3B9EFF;
+  --accent-subtle:   rgba(0,112,243,.08);
+  --glow:            rgba(0,112,243,.12);
+
+  /* ── Semantic ───────────────────────────────────────────────────────────── */
+  --success:         #10B981;
+  --warning:         #F59E0B;
+  --danger:          #EF4444;
+  --success-subtle:  rgba(16,185,129,.10);
+  --warning-subtle:  rgba(245,158,11,.10);
+  --danger-subtle:   rgba(239,68,68,.10);
+
+  /* ── Sidebar — always dark ──────────────────────────────────────────────── */
+  --sidebar-bg:      #1A1A1A;
+  --sidebar-surface: #242424;
+  --sidebar-border:  rgba(255,255,255,.07);
+  --sidebar-text:    rgba(255,255,255,.72);
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-active-bg:   rgba(255,255,255,.10);
+  --sidebar-hover:       rgba(255,255,255,.06);
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* ── Spacing ────────────────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ── Border radius ──────────────────────────────────────────────────────── */
+  --radius-sm:   6px;
+  --radius:      10px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-full: 100px;
+
+  /* ── Shadows ────────────────────────────────────────────────────────────── */
+  --shadow-xs:   0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.06), 0 4px 12px -4px rgba(0,0,0,.08);
+  --shadow-md:   0 2px 8px rgba(0,0,0,.07), 0 16px 40px -16px rgba(0,0,0,.14);
+  --shadow-lg:   0 4px 16px rgba(0,0,0,.08), 0 32px 64px -24px rgba(0,0,0,.18);
+  --shadow-focus: 0 0 0 3px rgba(0,112,243,.18);
+
+  /* ── Card depth (StandSync style) ───────────────────────────────────────── */
+  --card-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px -8px rgba(0,0,0,.10);
+  --card-shadow-hover: 0 4px 16px rgba(0,0,0,.08), 0 24px 48px -16px rgba(0,112,243,.18);
+
+  /* ── Transitions ────────────────────────────────────────────────────────── */
+  --transition:      150ms ease;
+  --spring-fast:     cubic-bezier(.34,1.56,.64,1);
+  --spring-med:      cubic-bezier(.22,1.2,.36,1);
+  --spring-soft:     cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Dark mode ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:             #0D0D0D;
+  --surface:        #161616;
+  --surface-2:      #1E1E1E;
+  --text-primary:   #F0F0F0;
+  --text-secondary: rgba(240,240,240,.72);
+  --text-tertiary:  rgba(240,240,240,.44);
+  --border:         rgba(255,255,255,.08);
+  --border-focus:   rgba(59,158,255,.5);
+  --accent:         #3B9EFF;
+  --accent-subtle:  rgba(59,158,255,.12);
+  --sidebar-bg:     #111111;
+  --sidebar-surface:#1A1A1A;
+}
+
+/* ── Global base ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
+  letter-spacing: -.022em;
+  line-height: 1.2;
+}
+
+input, select, textarea, button { font-family: inherit; }
+
+a { color: inherit; text-decoration: none; }
+
+::selection { background: rgba(0,112,243,.2); }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,112,243,.4); }
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+@keyframes fadeIn {
+  from { opacity:0 }
+  to   { opacity:1 }
+}
+@keyframes spin { to { transform:rotate(360deg) } }
+
+@keyframes ss3dRise {
+  0%   { opacity:0; transform:perspective(1200px) rotateX(10deg) translateY(28px) scale(.97) }
+  60%  { opacity:1; transform:perspective(1200px) rotateX(-1deg) translateY(-2px) scale(1.005) }
+  100% { opacity:1; transform:perspective(1200px) rotateX(0) translateY(0) scale(1) }
+}
+@keyframes ss3dPop {
+  0%   { opacity:0; transform:perspective(900px) scale(.92) translateZ(-40px) }
+  65%  { opacity:1; transform:perspective(900px) scale(1.015) translateZ(4px) }
+  100% { opacity:1; transform:perspective(900px) scale(1) translateZ(0) }
+}
+@keyframes ssAreaEnter {
+  from { opacity:0; transform:translateY(8px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+@keyframes ssRowEnter {
+  0%   { opacity:0; transform:translateY(12px) }
+  100% { opacity:1; transform:translateY(0) }
+}
+@keyframes ssSurfaceSheen {
+  0%   { transform:translateX(-150%) skewX(-20deg) }
+  100% { transform:translateX(250%) skewX(-20deg) }
+}
+@keyframes shimmer {
+  0%   { background-position:-200% 0 }
+  100% { background-position:200% 0 }
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────────── */
+.ss-3d-rise    { animation: ss3dRise .55s var(--spring-soft) both; }
+.ss-3d-pop     { animation: ss3dPop .38s var(--spring-soft) both; }
+.ss-area-enter { animation: ssAreaEnter .3s var(--spring-soft) both; }
+.ss-row-enter  { animation: ssRowEnter .36s var(--spring-soft) both; }
+.ss-row-enter:nth-child(1) { animation-delay:.04s }
+.ss-row-enter:nth-child(2) { animation-delay:.08s }
+.ss-row-enter:nth-child(3) { animation-delay:.12s }
+.ss-row-enter:nth-child(4) { animation-delay:.16s }
+.ss-row-enter:nth-child(n+5) { animation-delay:.20s }
+
+/* Card depth hover */
+.ss-lift {
+  transition: transform .22s var(--spring-fast), box-shadow .22s;
+  box-shadow: var(--card-shadow);
+}
+.ss-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Card sheen */
+.ss-surface-sheen { position:relative; overflow:hidden; }
+.ss-surface-sheen::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(105deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events:none; z-index:1; border-radius:inherit;
+}
+.ss-surface-sheen:hover::before {
+  animation: ssSurfaceSheen 1s var(--spring-soft);
+}
+
+/* Shimmer skeleton */
+.ss-shimmer {
+  background: linear-gradient(90deg,rgba(0,0,0,.04) 25%,rgba(0,0,0,.08) 50%,rgba(0,0,0,.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+}
+
+/* Blueprint grid — used on main content bg */
+.blueprint-grid {
+  background-image:
+    linear-gradient(to right,  rgba(0,112,243,.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,112,243,.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Gradient text */
+.ss-grad-text {
+  background: linear-gradient(110deg, #0070F3, #3B9EFF, #6366F1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Eyebrow label */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* Scrollbar hide */
+.ss-subtabs { scrollbar-width:none; -ms-overflow-style:none; }
+.ss-subtabs::-webkit-scrollbar { display:none; }
+
+/* Global button transitions */
+button {
+  transition: transform .12s var(--spring-fast), background .15s, border-color .15s, box-shadow .15s, opacity .15s, color .15s;
+}
+button:active { transform: scale(.96); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button:disabled:active { transform: none; }
+
+input, select, textarea {
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ss-3d-rise,.ss-3d-pop,.ss-area-enter,.ss-row-enter { animation:none!important; }
+  .ss-lift:hover { transform:none!important; }
+  .ss-surface-sheen::before { display:none; }
+  button:active { transform:none!important; }
+}
