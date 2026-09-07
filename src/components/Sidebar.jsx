@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { key: 'map', label: 'Floor map', icon: LayoutGrid },
   { key: 'seating', label: 'Seating grid', icon: BarChart2 },
   { key: 'dashboard', label: 'Dashboard', icon: BarChart2 },
-  { key: 'layout', label: 'Edit grid layout', icon: PenSquare, adminOnly: true },
+  { key: 'layout', label: 'Edit layout', icon: PenSquare, adminOnly: true },
 ]
 
 export function Sidebar({ tab, onTabChange }) {

@@ -1,3 +1,4 @@
+import { clusterSeatCount } from './clusterDefs'
 import { supabase } from '../../foundation/lib/supabase'
 
 export async function fetchOffices() {
@@ -222,14 +223,12 @@ export async function fetchClusters(officeId) {
   return data
 }
 
-const CLUSTER_SEAT_COUNTS = { '2h':2,'2v':2,'4':4,'6':6,'8':8,'round2':2,'round4':4 }
-
 export async function createCluster(officeId, cx, cy, clusterType, seatPrefix) {
   const { data: cluster, error: ce } = await supabase
     .from('spaces_clusters').insert({ office_id: officeId, cx, cy, cluster_type: clusterType })
     .select().single()
   if (ce) throw ce
-  const n = CLUSTER_SEAT_COUNTS[clusterType] ?? 4
+  const n = clusterSeatCount(clusterType)
   const seats = Array.from({ length: n }, (_, i) => ({
     office_id: officeId, cluster_id: cluster.id, cluster_pos: i,
     seat_number: `${seatPrefix}-${String(i+1).padStart(2,'0')}`,

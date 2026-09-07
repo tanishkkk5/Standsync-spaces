@@ -1,31 +1,40 @@
-const SYSTEM_PROMPT = `You are an expert office space analyst. When given a photo of an office, you analyze it and return a structured JSON floor plan layout.
+const SYSTEM_PROMPT = `You are an expert office space analyst. You can analyze:
+1. Office photos (overhead, wide-angle, any angle)
+2. Floor plan drawings or printed blueprints
+3. Spreadsheet/Excel-style seating layouts (screenshots showing a grid with arrows, colored cells, text labels)
+4. Hand-drawn sketches or whiteboard diagrams
 
-Return ONLY valid JSON, no markdown, no explanation. The JSON must match this exact shape:
+For spreadsheet layouts: arrows (↑↓←→) in cells = desk facing direction. Yellow/colored rows of arrows = rows of desks. "Sitting area" = lounge. "Wall" = wall marker. "Entrance" at edges = entry point. Numbers at the top = column counts or desk labels. Pairs of rows facing each other (↑ row then ↓ row) = a double-sided table cluster. Groups of cells on the left margin with boxes = pod/cluster desks.
+
+Return ONLY valid JSON, no markdown, no explanation. Shape:
 
 {
   "blocks": [
-    { "block_type": "wall"|"sitting"|"entrance"|"room", "x": 0-100, "y": 0-100, "w": 5-80, "h": 3-40, "label": "optional string" }
+    { "block_type": "wall"|"sitting"|"entrance"|"room", "x": 0-100, "y": 0-100, "w": 2-80, "h": 2-40, "label": "string or null" }
   ],
   "zones": [
     { "label": "ZONE NAME", "x": 0-100, "y": 0-100, "w": 10-60, "h": 10-50, "color": "rgba(r,g,b,0.07)" }
   ],
-  "desks": [
-    { "cx": 0-100, "cy": 0-100 }
+  "clusters": [
+    { "cx": 0-100, "cy": 0-100, "cluster_type": "string" }
   ]
 }
 
-Rules:
-- x, y, w, h are percentages of a 900x520 canvas (100 = full width/height)
-- Analyze visible desk clusters and place a desk dot at the center of each visible seat/chair
-- Identify distinct work zones (e.g. open plan, meeting room, lounge, reception) as zones
-- Identify walls, entry points, lounges, kitchen/café areas as blocks
-- entry points: block_type "entrance", x at 0 or ~100 (left or right edge), thin (w: 3-6, h: 5-10)
-- walls/partitions: block_type "wall", narrow strips
-- meeting rooms, enclosed spaces: block_type "room"
-- lounge/soft seating: block_type "sitting"
-- Return 10-60 desks depending on what's visible
-- Zones should have subtle, distinct rgba colors
-- Be conservative — only mark what you can clearly see`
+cluster_type values:
+- "4"      = 4-seat rectangular table (2 chairs each side)
+- "6"      = 6-seat table (3 each side)
+- "2s-N"   = double-sided table, N seats per side (e.g. "2s-7" = 7 chairs on top + 7 on bottom = 14 total, good for long bay rows)
+- "1s-N"   = single-sided table, N seats on one side only (e.g. "1s-3")
+- "round4" = round table with 4 chairs (lounge/informal)
+- "round2" = round table with 2 chairs (small lounge)
+
+For a spreadsheet layout with 7-column bay rows (7 arrows per row, paired ↑/↓ rows): use "2s-7" clusters.
+For isolated desk pods (small groups of 2-4 desks): use "4" or "round4".
+
+x, y, w, h and cx, cy are all percentages of a 900×520 canvas.
+Entry blocks: x near 0 or 98, w=2, h=10-15.
+Be generous with cluster placement — place clusters for ALL visible desk positions.
+Zones should be dashed-border areas grouping related desks.`
 
 export async function generateFloorPlanFromPhoto(imageBase64, mimeType) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -38,42 +47,27 @@ export async function generateFloorPlanFromPhoto(imageBase64, mimeType) {
       messages: [{
         role: 'user',
         content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: mimeType, data: imageBase64 },
-          },
-          {
-            type: 'text',
-            text: 'Analyze this office photo and generate the floor plan JSON layout. Return only the JSON object.',
-          },
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
+          { type: 'text', text: 'Analyze this office layout and return the JSON floor plan. If this is a spreadsheet layout, identify the desk rows, pod clusters, zones, walls, and entry points carefully.' },
         ],
       }],
     }),
   })
-
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
     throw new Error(err?.error?.message || `API error ${response.status}`)
   }
-
   const data = await response.json()
   const text = data.content?.find(c => c.type === 'text')?.text || ''
   const clean = text.replace(/```json|```/g, '').trim()
-
-  try {
-    return JSON.parse(clean)
-  } catch {
-    throw new Error('AI returned an unreadable layout — try a clearer overhead photo.')
-  }
+  try { return JSON.parse(clean) }
+  catch { throw new Error('AI returned an unreadable layout — try a clearer image.') }
 }
 
 export function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = e => {
-      const dataUrl = e.target.result
-      resolve(dataUrl.split(',')[1])
-    }
+    reader.onload = e => resolve(e.target.result.split(',')[1])
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
