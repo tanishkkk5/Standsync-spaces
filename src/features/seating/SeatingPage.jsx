@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, Upload, MapPin, AlertCircle } from 'lucide-react'
+import { Download, Upload, MapPin, AlertCircle, LayoutGrid, Image } from 'lucide-react'
 import { Button } from '../../foundation/ui/Button'
 import { Card } from '../../foundation/ui/Card'
 import { Skeleton } from '../../foundation/ui/misc'
@@ -7,6 +7,7 @@ import { useAuth } from '../../auth/AuthProvider'
 import { fetchOffices, fetchSeats, fetchLayoutBlocks, saveSeat, applySheetRows } from './api'
 import { downloadSheet, parseSheetFile } from './sheet'
 import { FloorPlan } from './FloorPlan'
+import { PhotoFloorPlan } from './PhotoFloorPlan'
 import { HoverCard } from './SeatChip'
 import { EditSeatModal } from './EditSeatModal'
 
@@ -21,6 +22,7 @@ export default function SeatingPage() {
   const [editing, setEditing] = useState(null)
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
+  const [view, setView] = useState('grid')
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -101,6 +103,18 @@ export default function SeatingPage() {
           ))}
         </div>
 
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {office?.floor_plan_url && (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <Button variant={view === 'grid' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('grid')}>
+                <LayoutGrid size={14} /> Grid
+              </Button>
+              <Button variant={view === 'photo' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('photo')}>
+                <Image size={14} /> Floor plan
+              </Button>
+            </div>
+          )}
+
         {isAdmin && office && (
           <div style={{ display: 'flex', gap: 8 }}>
             <Button variant="secondary" size="sm" onClick={() => downloadSheet(office.name, seats)}>
@@ -118,6 +132,7 @@ export default function SeatingPage() {
             />
           </div>
         )}
+        </div>
       </div>
 
       {(note || error) && (
@@ -150,6 +165,14 @@ export default function SeatingPage() {
       <Card padding="20px" style={{ overflowX: 'auto' }}>
         {loading ? (
           <Skeleton height={400} />
+        ) : view === 'photo' && office.floor_plan_url ? (
+          <PhotoFloorPlan
+            office={office}
+            seats={seats}
+            isAdmin={isAdmin}
+            editable={false}
+            onSeatClick={setEditing}
+          />
         ) : (
           <FloorPlan
             office={office}

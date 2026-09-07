@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
-import { MousePointer2, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { MousePointer2, Trash2, Upload } from 'lucide-react'
 import { Button } from '../../foundation/ui/Button'
 import { Card } from '../../foundation/ui/Card'
 import { Input } from '../../foundation/ui/Input'
+import { PhotoFloorPlan } from './PhotoFloorPlan'
 import {
   fetchOffices, fetchSeats, fetchLayoutBlocks,
   createSeat, deleteSeat, moveSeat,
   createLayoutBlock, deleteLayoutBlock, updateLayoutBlock,
-  updateOfficeGrid,
+  updateOfficeGrid, uploadFloorPlanImage, createPinSeat, updateSeatPin,
 } from './api'
 
 const TOOLS = [
@@ -35,6 +36,10 @@ export default function LayoutEditorPage() {
   const [sizeDraft, setSizeDraft] = useState({ w: 1, h: 1 })
   const [error, setError] = useState('')
   const [gridDraft, setGridDraft] = useState({ cols: 10, rows: 11 })
+  const [mode, setMode] = useState('grid') // 'grid' | 'photo'
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
+  const [pinSeatCounter, setPinSeatCounter] = useState(1)
 
   useEffect(() => {
     fetchOffices().then(list => {
@@ -54,6 +59,7 @@ export default function LayoutEditorPage() {
       setSeats(s)
       setBlocks(b)
       setSeatCounter(s.length + 1)
+      setPinSeatCounter(s.length + 1)
     } catch (e) {
       setError(e.message)
     }
@@ -234,6 +240,42 @@ export default function LayoutEditorPage() {
     }
   }
 
+  async function handleUploadImage(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError('')
+    setUploading(true)
+    try {
+      const url = await uploadFloorPlanImage(officeId, file)
+      setOffices(prev => prev.map(o => (o.id === officeId ? { ...o, floor_plan_url: url } : o)))
+    } catch (err) {
+      setError(err.message)
+    }
+    setUploading(false)
+    e.target.value = ''
+  }
+
+  async function handlePinCreate(x, y) {
+    try {
+      const prefix = office.name.match(/(\d+)\s*$/)?.[1] ?? '1'
+      const seatNumber = `B${prefix}-P${String(pinSeatCounter).padStart(2, '0')}`
+      await createPinSeat(officeId, x, y, seatNumber)
+      setPinSeatCounter(c => c + 1)
+      reload()
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+
+  async function handlePinMove(seatId, x, y) {
+    try {
+      await updateSeatPin(seatId, x, y)
+      setSeats(prev => prev.map(s => (s.id === seatId ? { ...s, pin_x: x, pin_y: y } : s)))
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+
   const cells = []
   for (let y = 0; y < office.grid_rows; y++) {
     for (let x = 0; x < office.grid_cols; x++) cells.push({ x, y })
@@ -250,6 +292,51 @@ export default function LayoutEditorPage() {
           ))}
         </div>
 
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <Button size="sm" variant={mode === 'grid' ? 'primary' : 'secondary'} onClick={() => { setMode('grid'); setSelected(null) }}>
+            Grid layout
+          </Button>
+          <Button size="sm" variant={mode === 'photo' ? 'primary' : 'secondary'} onClick={() => { setMode('photo'); setSelected(null) }}>
+            Floor plan photo
+          </Button>
+        </div>
+
+        {error && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
+
+        {mode === 'photo' ? (
+          <div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+              <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()}>
+                <Upload size={14} /> {office.floor_plan_url ? 'Replace photo' : 'Upload floor plan photo'}
+              </Button>
+              {uploading && <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Uploading…</span>}
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUploadImage} style={{ display: 'none' }} />
+            </div>
+
+            {office.floor_plan_url ? (
+              <>
+                <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 12 }}>
+                  Click anywhere on the photo to drop a new seat pin. Drag an existing pin to reposition it.
+                </p>
+                <Card padding="12px">
+                  <PhotoFloorPlan
+                    office={office}
+                    seats={seats}
+                    isAdmin
+                    editable
+                    onPinCreate={handlePinCreate}
+                    onPinMove={handlePinMove}
+                  />
+                </Card>
+              </>
+            ) : (
+              <p style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
+                Upload a photo or exported image of this office's floor plan to start placing seat pins on it.
+              </p>
+            )}
+          </div>
+        ) : (
+          <>
         <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {TOOLS.map(t => (
@@ -274,8 +361,6 @@ export default function LayoutEditorPage() {
           {tool === 'erase' && 'Click a seat or block to remove it.'}
           {['wall', 'sitting', 'entrance'].includes(tool) && 'Click and drag to draw a block, release to place it.'}
         </p>
-
-        {error && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
 
         <Card padding="16px" style={{ overflow: 'auto' }}>
           <div
@@ -324,6 +409,8 @@ export default function LayoutEditorPage() {
             })}
           </div>
         </Card>
+          </>
+        )}
       </div>
 
       {selected && (

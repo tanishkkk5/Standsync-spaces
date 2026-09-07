@@ -151,3 +151,31 @@ export async function moveSeat(id, x, y) {
   const { error } = await supabase.from('spaces_seats').update({ x, y }).eq('id', id)
   if (error) throw error
 }
+
+// ── Photo floor plan ─────────────────────────────────────────────────────
+
+export async function uploadFloorPlanImage(officeId, file) {
+  const ext = file.name.split('.').pop()
+  const path = `${officeId}/${Date.now()}.${ext}`
+  const { error: uploadError } = await supabase.storage.from('floorplans').upload(path, file, { upsert: true })
+  if (uploadError) throw uploadError
+  const { data } = supabase.storage.from('floorplans').getPublicUrl(path)
+  const { error } = await supabase.from('spaces_offices').update({ floor_plan_url: data.publicUrl }).eq('id', officeId)
+  if (error) throw error
+  return data.publicUrl
+}
+
+export async function createPinSeat(officeId, pinX, pinY, seatNumber) {
+  const { data, error } = await supabase
+    .from('spaces_seats')
+    .insert({ office_id: officeId, seat_number: seatNumber, pin_x: pinX, pin_y: pinY, occupied: false })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateSeatPin(id, pinX, pinY) {
+  const { error } = await supabase.from('spaces_seats').update({ pin_x: pinX, pin_y: pinY }).eq('id', id)
+  if (error) throw error
+}
