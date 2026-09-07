@@ -4,7 +4,7 @@ import { Button } from '../../foundation/ui/Button'
 import { Card } from '../../foundation/ui/Card'
 import { Skeleton } from '../../foundation/ui/misc'
 import { useAuth } from '../../auth/AuthProvider'
-import { fetchOffices, fetchSeats, saveSeat, applySheetRows } from './api'
+import { fetchOffices, fetchSeats, fetchLayoutBlocks, saveSeat, applySheetRows } from './api'
 import { downloadSheet, parseSheetFile } from './sheet'
 import { FloorPlan } from './FloorPlan'
 import { HoverCard } from './SeatChip'
@@ -15,6 +15,7 @@ export default function SeatingPage() {
   const [offices, setOffices] = useState([])
   const [officeId, setOfficeId] = useState(null)
   const [seats, setSeats] = useState([])
+  const [blocks, setBlocks] = useState([])
   const [loading, setLoading] = useState(true)
   const [hovered, setHovered] = useState(null)
   const [editing, setEditing] = useState(null)
@@ -34,8 +35,11 @@ export default function SeatingPage() {
   useEffect(() => {
     if (!officeId) return
     setLoading(true)
-    fetchSeats(officeId)
-      .then(setSeats)
+    Promise.all([fetchSeats(officeId), fetchLayoutBlocks(officeId)])
+      .then(([s, b]) => {
+        setSeats(s)
+        setBlocks(b)
+      })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [officeId])
@@ -143,12 +147,14 @@ export default function SeatingPage() {
         </span>
       </div>
 
-      <Card padding="20px">
+      <Card padding="20px" style={{ overflowX: 'auto' }}>
         {loading ? (
           <Skeleton height={400} />
         ) : (
           <FloorPlan
+            office={office}
             seats={seats}
+            blocks={blocks}
             isAdmin={isAdmin}
             onSeatClick={setEditing}
             hovered={hovered}

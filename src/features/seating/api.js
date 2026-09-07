@@ -96,3 +96,48 @@ export async function applySheetRows(officeId, rows) {
 
   return updated
 }
+
+// ── Layout editor ──────────────────────────────────────────────────────
+
+export async function fetchLayoutBlocks(officeId) {
+  const { data, error } = await supabase
+    .from('spaces_layout_blocks')
+    .select('*')
+    .eq('office_id', officeId)
+  if (error) throw error
+  return data
+}
+
+export async function createLayoutBlock(block) {
+  const { data, error } = await supabase.from('spaces_layout_blocks').insert(block).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteLayoutBlock(id) {
+  const { error } = await supabase.from('spaces_layout_blocks').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function createSeat(officeId, x, y, seatNumber) {
+  const { data, error } = await supabase
+    .from('spaces_seats')
+    .insert({ office_id: officeId, seat_number: seatNumber, x, y, col_index: 0, occupied: false })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteSeat(id) {
+  const { error } = await supabase.from('spaces_seats').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function updateOfficeGrid(officeId, gridCols, gridRows) {
+  const { error } = await supabase
+    .from('spaces_offices')
+    .update({ grid_cols: gridCols, grid_rows: gridRows })
+    .eq('id', officeId)
+  if (error) throw error
+}

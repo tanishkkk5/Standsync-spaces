@@ -1,14 +1,16 @@
-import { LayoutGrid, BarChart2, ShieldCheck, Eye, LogOut } from 'lucide-react'
+import { LayoutGrid, BarChart2, PenSquare, ShieldCheck, Eye, LogOut } from 'lucide-react'
 import { Logo } from '../foundation/ui/misc'
 import { useAuth } from '../auth/AuthProvider'
 
 const NAV_ITEMS = [
   { key: 'seating', label: 'Seating map', icon: LayoutGrid },
   { key: 'dashboard', label: 'Dashboard', icon: BarChart2 },
+  { key: 'layout', label: 'Edit layout', icon: PenSquare, adminOnly: true },
 ]
 
 export function Sidebar({ tab, onTabChange }) {
   const { isAdmin, signOut } = useAuth()
+  const items = NAV_ITEMS.filter(item => !item.adminOnly || isAdmin)
 
   return (
     <div
@@ -28,7 +30,7 @@ export function Sidebar({ tab, onTabChange }) {
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-        {NAV_ITEMS.map(item => {
+        {items.map(item => {
           const Icon = item.icon
           const active = tab === item.key
           return (
