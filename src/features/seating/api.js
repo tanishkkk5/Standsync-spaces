@@ -213,3 +213,40 @@ export async function updateDeskPos(id, cx, cy) {
   const { error } = await supabase.from('spaces_seats').update({ cx, cy }).eq('id', id)
   if (error) throw error
 }
+
+// ── Clusters ─────────────────────────────────────────────────────────────────
+
+export async function fetchClusters(officeId) {
+  const { data, error } = await supabase.from('spaces_clusters').select('*').eq('office_id', officeId)
+  if (error) throw error
+  return data
+}
+
+const CLUSTER_SEAT_COUNTS = { '2h':2,'2v':2,'4':4,'6':6,'8':8,'round2':2,'round4':4 }
+
+export async function createCluster(officeId, cx, cy, clusterType, seatPrefix) {
+  const { data: cluster, error: ce } = await supabase
+    .from('spaces_clusters').insert({ office_id: officeId, cx, cy, cluster_type: clusterType })
+    .select().single()
+  if (ce) throw ce
+  const n = CLUSTER_SEAT_COUNTS[clusterType] ?? 4
+  const seats = Array.from({ length: n }, (_, i) => ({
+    office_id: officeId, cluster_id: cluster.id, cluster_pos: i,
+    seat_number: `${seatPrefix}-${String(i+1).padStart(2,'0')}`,
+    cx, cy, occupied: false,
+  }))
+  const { error: se } = await supabase.from('spaces_seats').insert(seats)
+  if (se) throw se
+  return cluster
+}
+
+export async function updateClusterPos(id, cx, cy) {
+  const { error } = await supabase.from('spaces_clusters').update({ cx, cy }).eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteCluster(id) {
+  await supabase.from('spaces_seats').delete().eq('cluster_id', id)
+  const { error } = await supabase.from('spaces_clusters').delete().eq('id', id)
+  if (error) throw error
+}
