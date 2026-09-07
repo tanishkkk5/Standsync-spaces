@@ -126,8 +126,7 @@ export function SvgFloorMap({
       })}
 
       {/* Desk dots */}
-      {seats.map(seat => {
-        if (seat.cx == null) return null
+      {seats.filter(s => s.cx != null && s.cy != null).map(seat => {
         const dx = (seat.cx / 100) * W
         const dy = (seat.cy / 100) * H
         const isDragging = dragging?.id === seat.id

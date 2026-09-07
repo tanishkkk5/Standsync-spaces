@@ -277,6 +277,25 @@ export default function MapPage() {
             <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>
               Loading floor plan…
             </div>
+          ) : seats.filter(s => s.cx != null).length === 0 && blocks.length === 0 ? (
+            <div style={{ height: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--text-tertiary)' }}>
+              <div style={{ fontSize: 36 }}>🗺️</div>
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>No floor plan yet for this office</p>
+              <p style={{ fontSize: 13, textAlign: 'center', maxWidth: 360 }}>
+                Use <strong>AI Generate layout</strong> to auto-create one from a photo,
+                or click <strong>Edit layout</strong> then use the draw tools to place desks, zones, and walls manually.
+              </p>
+              {isAdmin && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <Button size="sm" variant="primary" onClick={() => setAiModal(true)}>
+                    <Wand2 size={14} /> AI Generate layout
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => setEditable(true)}>
+                    Edit layout manually
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
             <SvgFloorMap
               office={office}
@@ -297,8 +316,6 @@ export default function MapPage() {
           )}
         </Card>
       </div>
-
-      {/* Side panel */}
       {selected && (
         <Card padding="20px" style={{ width: 260, flexShrink: 0, alignSelf: 'flex-start' }}>
           {selected.type === 'seat' && (
