@@ -256,3 +256,22 @@ input, select, textarea {
   .ss-surface-sheen::before { display:none; }
   button:active { transform:none!important; }
 }
+
+/* ── Mobile responsive ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .spaces-sidebar { display: none !important; }
+  .spaces-main { padding: 16px !important; }
+  .spaces-mobile-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--sidebar-border);
+    z-index: 100;
+    padding: 8px 0;
+    justify-content: space-around;
+  }
+}
+@media (min-width: 769px) {
+  .spaces-mobile-nav { display: none !important; }
+}

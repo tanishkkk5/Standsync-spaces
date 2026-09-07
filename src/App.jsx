@@ -16,8 +16,10 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
-      <Sidebar tab={tab} onTabChange={setTab} />
-      <div className="blueprint-grid" style={{ flex: 1, padding: 28, overflowX: 'auto' }}>
+      <div className="spaces-sidebar">
+        <Sidebar tab={tab} onTabChange={setTab} />
+      </div>
+      <div className="spaces-main blueprint-grid" style={{ flex: 1, padding: 28, overflowX: 'auto', paddingBottom: 80 }}>
         <h1 style={{ fontSize: 22, fontFamily: 'var(--font-display)', marginBottom: 20, color: 'var(--text-primary)' }}>
           {tab === 'map' ? 'Floor map' : tab === 'seating' ? 'Seating grid' : tab === 'dashboard' ? 'Dashboard' : 'Edit grid layout'}
         </h1>
@@ -26,6 +28,24 @@ export default function App() {
         {tab === 'dashboard' && <DashboardPage />}
         {tab === 'layout' && <LayoutEditorPage />}
       </div>
+
+      {/* Mobile bottom nav */}
+      <nav className="spaces-mobile-nav">
+        {[
+          { key: 'map', label: 'Map', icon: '🗺️' },
+          { key: 'seating', label: 'Grid', icon: '⊞' },
+          { key: 'dashboard', label: 'Stats', icon: '📊' },
+        ].map(item => (
+          <button key={item.key} onClick={() => setTab(item.key)} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px 16px',
+            color: tab === item.key ? '#fff' : 'rgba(255,255,255,0.5)', fontSize: 11,
+          }}>
+            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            {item.label}
+          </button>
+        ))}
+      </nav>
     </div>
   )
 }

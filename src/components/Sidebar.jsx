@@ -15,6 +15,7 @@ export function Sidebar({ tab, onTabChange }) {
 
   return (
     <div
+      className="spaces-sidebar"
       style={{
         width: 220,
         flexShrink: 0,
